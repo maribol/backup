@@ -28,7 +28,9 @@ Maribol Backup Service v 0.1
 <h3>How to use</h3>
 <pre>
 include('Backup.class.php');
-$options = array();
+$options = array(
+    'recursive'=>1
+);
 $archiveName = 'backup-'.date('Y-m-d').'.zip';
 $bk = new Backup($archiveName, $options);
 $bk->collectFiles('D:\wamp\www\*');

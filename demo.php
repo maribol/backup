@@ -2,7 +2,9 @@
 
 set_time_limit(0);
 include('Backup.class.php');
-$options = array();
+$options = array(
+    'recursive'=>1
+);
 $archiveName = 'backup-'.date('Y-m-d').'.zip';
 $bk = new Backup($archiveName, $options);
 $bk->collectFiles('D:\wamp\www\*');
