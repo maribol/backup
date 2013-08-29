@@ -71,17 +71,24 @@ class Backup
 
     public function ftpConnect()
     {
-        $this->ftp->res = @ftp_connect($this->settings['ftp']['host'], $this->settings['ftp']['port']) or die("Couldn't connect to {$this->settings['ftp']['host']}:{$this->settings['ftp']['port']}");
+	    if(!isset($this->settings['ftp']['host']) || !isset($this->settings['ftp']['port'])){
+            $this->errors[] = 'Could not connect to ftp server';
+			return false;
+	    }
+		$host = $this->settings['ftp']['host'].':'.$this->settings['ftp']['port'];
+        $this->ftp->res = @ftp_connect($this->settings['ftp']['host'], $this->settings['ftp']['port']);
         if ($this->ftp->res) {
             $this->ftp->login = @ftp_login($this->ftp->res, $this->settings['ftp']['username'], $this->settings['ftp']['password']);
             return true;
         }
+        $this->errors[] = 'Couldn\'t connect to $host';
         return false;
     }
 
     public function ftpTransfer($localFile, $remoteFile)
     {
-        if (!$this->ftp->login) {
+        if (!isset($this->ftp->login) || !$this->ftp->login) {
+            $this->errors[] = 'FTP username or password is invalid';
             return false;
         }
         $remoteFile = $this->settings['ftp']['path'] . $remoteFile;
@@ -130,19 +137,19 @@ class Backup
         if ($this->zip->open($this->archiveName, ZipArchive::CREATE) !== TRUE) {
             exit("cannot open $this->archiveName\n");
         }
-
+		
         foreach ($this->files as $file) {
             $ext = strtolower(end(explode('.', $file)));
             if (count($this->settings['extensionsExclude']) == 0 || !in_array($ext, $this->settings['extensionsExclude'])) {
                 if (count($this->settings['extensionsOnly']) == 0 || in_array($ext, $this->settings['extensionsOnly'])) {
-                    $this->zip->addFile(realpath($file));
+                    $this->zip->addFile($file);
                 }
             }
         }
         $res = $this->zip->close();
 
         if ($this->settings['ftp']['active']) {
-            $res = $res && $bk->transferZip();
+            $res = $res && $this->transferZip();
         }
         return $res;
     }
@@ -154,4 +161,3 @@ class Backup
     }
 
 }
-
