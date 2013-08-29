@@ -71,11 +71,11 @@ class Backup
 
     public function ftpConnect()
     {
-	    if(!isset($this->settings['ftp']['host']) || !isset($this->settings['ftp']['port'])){
+        if (!isset($this->settings['ftp']['host']) || !isset($this->settings['ftp']['port'])) {
             $this->errors[] = 'Could not connect to ftp server';
-			return false;
-	    }
-		$host = $this->settings['ftp']['host'].':'.$this->settings['ftp']['port'];
+            return false;
+        }
+        $host = $this->settings['ftp']['host'] . ':' . $this->settings['ftp']['port'];
         $this->ftp->res = @ftp_connect($this->settings['ftp']['host'], $this->settings['ftp']['port']);
         if ($this->ftp->res) {
             $this->ftp->login = @ftp_login($this->ftp->res, $this->settings['ftp']['username'], $this->settings['ftp']['password']);
@@ -137,7 +137,7 @@ class Backup
         if ($this->zip->open($this->archiveName, ZipArchive::CREATE) !== TRUE) {
             exit("cannot open $this->archiveName\n");
         }
-		
+
         foreach ($this->files as $file) {
             $ext = strtolower(end(explode('.', $file)));
             if (count($this->settings['extensionsExclude']) == 0 || !in_array($ext, $this->settings['extensionsExclude'])) {
@@ -158,6 +158,12 @@ class Backup
     {
         $this->ftpConnect();
         return $this->ftpTransfer($this->archiveName, $this->archiveName);
+    }
+
+    public function __destruct()
+    {
+        unset($this->ftp);
+        unset($this->zip);
     }
 
 }
